@@ -3,7 +3,7 @@
 Simple and easy to set up SOCKS4/5 proxy server
 
 ### Getting Started
-This project requires [Sockslib](https://pypi.org/project/sockslib/)
+This project requires [Sockslib](https://pypi.org/project/sockslib/)<br />
 `pip3 install sockslib`
 
 To start, clone the repo, and run `sockserver.py`<br />
