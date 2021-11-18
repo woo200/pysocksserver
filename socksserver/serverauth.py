@@ -28,3 +28,13 @@ class UserPassAuth(ServerAuthenticationMethod):
 
         socket.sendall(b"\x01\x00")
         return True
+
+class IDAuth(ServerAuthenticationMethod):
+    def __init__(self, ids):
+        self.ids = ids
+
+    def getId(self):
+        return 0xFF
+
+    def authenticate(self, id):
+        return id.decode() in self.ids

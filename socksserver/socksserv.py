@@ -125,6 +125,14 @@ class SocksServer(Hooks):
 
     def __handle__4(self, conn, addr):
         GOOD_REQUEST = True
+        GOODAUTH = False
+        METHOD = 0x00
+
+        for method in self.auth:
+            if method.getId() == 0xFF or method.getId() == 0x00:
+                GOODAUTH = True
+                METHOD = method
+                break
 
         cmd, = conn.recv(1)
         if cmd != 0x01:
@@ -140,18 +148,31 @@ class SocksServer(Hooks):
             id += c
 
         id = id[:-1]
+
         reDst = self.call_hook("handshake_finish", (dstip, dstport), conn, addr)
 
         print(f"Recieved SOCKS4 request from {addr[0]}:{addr[1]} to connect to: {dstip}:{dstport} ({id})")
+
         if reDst != None:
             dstip, dstport = reDst
+            dstip = ipaddress.IPv4Address(dstip).exploded
 
-        if ipaddress.ip_address(dstaddr.getIp()).is_private and not self.allow_private:
+        if ipaddress.ip_address(dstip).is_private and not self.allow_private:
             GOOD_REQUEST = False
+
+        if not GOODAUTH:
+            conn.sendall(b"\x00\x5B")
+            conn.close()
+            return
+
+        if not METHOD.authenticate(id):
+            conn.sendall(b"\x00\x5B")
+            conn.close()
+            return
 
         if GOOD_REQUEST:
             try:
-                self.__start__v4(conn, addr, (dstaddr.getIp(), dstport))
+                self.__start__v4(conn, addr, (dstip, dstport))
             except:
                 conn.sendall(b"\x00\x5B")
                 conn.close()
@@ -173,6 +194,8 @@ class SocksServer(Hooks):
 
         for method in methods:
             for au in auth:
+                if au.getId() == 0xFF:
+                    continue
                 if au.getId() == method:
                     choice = au
                     break
