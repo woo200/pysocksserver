@@ -33,7 +33,7 @@ foo:bar
 #### Authentication via MySQL
 To enable MySQL authentication, you must first have the mysql connector installed. <br />
 `pip3 install mysql-connector-python`<br />
-Once installed, enter the username, password, host, and database name into the config. The program will automatically create a users table that consists of Username (TEXT), and Password (TEXT). Note: the password is stored in plaintext, and is NOT secured. DO NOT USE IN PRODUCTION. If you would like to hash the password you may edit [dbauth.py](dbauth.py) or create your own authentication method. See [Implementing Custom Authentication](implementing-custom-authentication).
+Once installed, enter the username, password, host, and database name into the config. The program will automatically create a users table that consists of Username (TEXT), and Password (TEXT). Note: the password is stored in plaintext, and is NOT secured. DO NOT USE IN PRODUCTION. If you would like to hash the password you may edit [dbauth.py](dbauth.py) or create your own authentication method. See [Implementing Custom Authentication](#implementing-custom-authentication).
 ```json
 "mysql": {
     "enabled": false,
