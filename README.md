@@ -3,7 +3,10 @@
 Simple and easy to set up SOCKS4/5 proxy server
 
 ### Getting Started
-Clone the repo, and run `sockserver.py`
+This project requires [Sockslib](https://pypi.org/project/sockslib/)
+`pip3 install sockslib`
+
+To start, clone the repo, and run `sockserver.py`
 By default, this file will bind to `127.0.0.1:8080`, to chane this, go into the file and find the line that says `('127.0.0.1', 8080)` and change the ip and port to whatever you need.
 ```bash
 git clone https://github.com/woo200/pysocksserver;
@@ -12,6 +15,17 @@ python3 sockserver.py;
 ```
 
 ## Advanced usage
+
+### SocksServer class
+The `socksserver.SocksServer` class can take up to 4 arguments
+#### Arguments:
+ - bind - Tuple containing address and port to bind server to `[ REQUIRED ]`
+ - auth - Array of acceptable authentication methods `[ Default: [NoAuth()] ]`
+ - allow_private - Allow proxy access to private IP ranges? (127.0.0.1, 192.168.0.x, 10.0.0.x, etc) `[ Default: False ]`
+ - secure - WIP, Most likely will break server if enabled `[ Default: False ]`
+
+#### Functions:
+ - start_server() - Start the proxy server threads [ Note: This function does NOT block ]
 
 ### Username / Password Authentication
 Note: Username / Password authentication is only supported by SOCKS5, See [ID Authentication](#id-authentication-socks4) for SOCKS4
@@ -91,6 +105,41 @@ class NoAuth(socksserver.ServerAuthenticationMethod):
 
     def authenticate(self, socket): # Always allow connection
         return True
+```
+
+## Hooks
+Hooks are used as callbacks to certain events that happen when a client connects or sends a packet. Currently only 3 hooks exist
+ - connect - Called as soon as a connection is established between client and the server. [ Arguments: sock, addr ]
+ - handshake_finish - Called when the client and server have finished handshaking and authentication. [ Arguments: requestedConnectionAddr, sock, addr ]
+ - packet - Called when a packet is sent between client and server [ Arguments: data, sock, origin_addr, socket_type ]
+
+```python
+import socksserver
+import time
+
+def connect_hook(sock, addr):
+    print(f"{addr} connected!")
+
+def handshake_finish_hook(requestedConnectionAddr, sock, addr):
+    print(f"{addr} finished handshaking")
+
+def packet_hook(data, sock, origin_addr, socket_type):
+    if socket_type == socksserver.SocketType.CLIENT:
+        print(f"Client sent data: {data}")
+    elif socket_type == socksserver.SocketType.SERVER:
+        print(f"Server sent data: {data}")
+
+server = socksserver.SocksServer(('127.0.0.1', 1080)) # Create the server
+
+server.set_hook("connect", connect_hook)
+server.set_hook("handshake_finish", handshake_finish_hook)
+server.set_hook("packet", packet_hook)
+
+server.start_server()
+
+while True:
+    time.sleep(1)
+
 ```
 
 ## Notes
