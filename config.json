@@ -1,0 +1,16 @@
+{
+  "bind_addr": ["127.0.0.1", 1080],
+  "authentication": {
+    "authfile": {
+      "enabled": false,
+      "file": "logins.auth"
+    },
+    "mysql": {
+      "enabled": false,
+      "host": "127.0.0.1:3306",
+      "username": "proxy",
+      "password": "bopper",
+      "database": "proxy"
+    }
+  }
+}

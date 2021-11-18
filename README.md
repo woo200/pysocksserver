@@ -7,13 +7,42 @@ This project requires [Sockslib](https://pypi.org/project/sockslib/)<br />
 `pip3 install sockslib`
 
 To start, clone the repo, and run `sockserver.py`<br />
-By default, this file will bind to `127.0.0.1:8080`, to chane this, go into the file and find the line that says `('127.0.0.1', 8080)` and change the ip and port to whatever you need.
+By default, this file will bind to `127.0.0.1:1080`, to change this, go into config.json and change bind_addr.
 ```bash
 git clone https://github.com/woo200/pysocksserver;
 cd pysocksserver;
 python3 sockserver.py;
 ```
-
+## Config
+#### Setting Bind Address
+To set the address the server binds to, find the `bind_address` parameter and change it to whatever you want. Ex: `"bind_address": ["1.2.3.4", 1234]`
+#### Authenticatian with file
+File authentication is authentication that is defined by a file with each sign-in separated by newlines, and the username and password separated by a `:`. Example: `username:password`<br /><br />
+`config.json`
+```json
+"authfile": {
+    "enabled": true,
+    "file": "logins.auth"
+}
+```
+`logins.auth`
+```
+username:password
+foo:bar
+```
+#### Authentication via MySQL
+To enable MySQL authentication, you must first have the mysql connector installed. <br />
+`pip3 install mysql-connector-python`<br />
+Once installed, enter the username, password, host, and database name into the config. The program will automatically create a users table that consists of Username (TEXT), and Password (TEXT). Note: the password is stored in plaintext, and is NOT secured. DO NOT USE IN PRODUCTION. If you would like to hash the password you may edit [dbauth.py](dbauth.py) or create your own authentication method. See [Implementing Custom Authentication](implementing-custom-authentication).
+```json
+"mysql": {
+    "enabled": false,
+    "host": "127.0.0.1:3306",
+    "username": "proxy",
+    "password": "bopper",
+    "database": "proxy"
+}
+```
 ## Advanced usage
 
 ### SocksServer class

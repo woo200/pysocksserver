@@ -1,3 +1,6 @@
+# Copyright 2021 John Woo
+# See LICENSE.md
+
 import struct
 import socket
 import ipaddress
