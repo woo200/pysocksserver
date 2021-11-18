@@ -6,7 +6,7 @@ Simple and easy to set up SOCKS4/5 proxy server
 This project requires [Sockslib](https://pypi.org/project/sockslib/)
 `pip3 install sockslib`
 
-To start, clone the repo, and run `sockserver.py`
+To start, clone the repo, and run `sockserver.py`<br />
 By default, this file will bind to `127.0.0.1:8080`, to chane this, go into the file and find the line that says `('127.0.0.1', 8080)` and change the ip and port to whatever you need.
 ```bash
 git clone https://github.com/woo200/pysocksserver;
@@ -28,7 +28,7 @@ The `socksserver.SocksServer` class can take up to 4 arguments
  - start_server() - Start the proxy server threads [ Note: This function does NOT block ]
 
 ### Username / Password Authentication
-Note: Username / Password authentication is only supported by SOCKS5, See [ID Authentication](#id-authentication-socks4) for SOCKS4
+Note: Username / Password authentication is only supported by SOCKS5, See [ID Authentication](#id-authentication-socks4) for SOCKS4<br />
 To enable username / password authentication, you must pass an array of acceptable authentication methods into the server object when you create it. The class that is used for this type of authentication is `socksserver.UserPassAuth`. This class takes a dictionary containing username and passwords as such: `socksserver.UserPassAuth({"username": "password"})`.
 ```python
 import socksserver
@@ -48,7 +48,7 @@ while True: # Block
 ```
 
 ### ID Authentication (Socks4)
-To enable ID authentication, you will use the `socksserver.IDAuth` class. This class takes an array of ID's that it will authenticate against.
+To enable ID authentication, you will use the `socksserver.IDAuth` class. This class takes an array of ID's that it will authenticate against.<br />
 Following the example above, we can change the auth array to this:
 ```python
 auth = [ # Array of acceptable authentication methods
@@ -59,7 +59,7 @@ auth = [ # Array of acceptable authentication methods
 ```
 
 ### Implementing Custom Authentication
-Note: Custom authentication methods are only supported by SOCKS5.
+Note: Custom authentication methods are only supported by SOCKS5.<br />
 To implement a custom authetication method, you will create a class that is derived from `socksserver.ServerAuthenticationMethod`. This class must contain at least two methods: `getId(self) -> int` and `authenticate(self, socket) -> bool`
 #### getId(self)
 The `getId` function returns the ID that the server will add to the acceptable auth list. The client will chose an authentication method and the server will check if it can authenticate with that.
