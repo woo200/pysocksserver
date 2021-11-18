@@ -28,7 +28,7 @@ The `socksserver.SocksServer` class can take up to 4 arguments
  - start_server() - Start the proxy server threads [ Note: This function does NOT block ]
 
 ### Username / Password Authentication
-Note: Username / Password authentication is only supported by SOCKS5, See [ID Authentication](#id-authentication-socks4) for SOCKS4<br />
+Note: Username / Password authentication is only supported by SOCKS5, See [ID Authentication](#id-authentication-socks4) for SOCKS4<br /><br />
 To enable username / password authentication, you must pass an array of acceptable authentication methods into the server object when you create it. The class that is used for this type of authentication is `socksserver.UserPassAuth`. This class takes a dictionary containing username and passwords as such: `socksserver.UserPassAuth({"username": "password"})`.
 ```python
 import socksserver
