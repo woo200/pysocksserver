@@ -2,7 +2,7 @@
 # See LICENSE.md
 
 from socksserver.socksserv import ServerAuthenticationMethod
-import struct
+
 
 class UserPassAuth(ServerAuthenticationMethod):
     def __init__(self, user_db):
@@ -25,12 +25,13 @@ class UserPassAuth(ServerAuthenticationMethod):
             if self.user_db[id.decode()] != pw.decode():
                 socket.sendall(b"\x01\x01")
                 return False
-        except Exception as e:
+        except Exception:
             socket.sendall(b"\x01\x01")
             return False
 
         socket.sendall(b"\x01\x00")
         return True
+
 
 class IDAuth(ServerAuthenticationMethod):
     def __init__(self, ids):

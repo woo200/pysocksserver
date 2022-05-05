@@ -8,6 +8,8 @@ import json
 import os
 import importlib
 
+from dbauth import DBUserPassAuth
+
 mysql_enabled = False
 name = "mysql"
 if name in sys.modules:
@@ -16,8 +18,6 @@ if name in sys.modules:
 elif (spec := importlib.util.find_spec(name)) is not None:
     import mysql.connector
     mysql_enabled = True
-
-from dbauth import DBUserPassAuth
 
 config = json.load(open("config.json"))
 ip, port = config["bind_addr"]
@@ -38,9 +38,9 @@ if config["authentication"]["authfile"]["enabled"]:
 if config["authentication"]["mysql"]["enabled"]:
     if mysql_enabled:
         try:
-            ip, portc = config["authentication"]["mysql"]["host"].split(":")
+            ipc, portc = config["authentication"]["mysql"]["host"].split(":")
             db = mysql.connector.connect(
-                host=ip,
+                host=ipc,
                 port=int(portc),
                 user=config["authentication"]["mysql"]["username"],
                 password=config["authentication"]["mysql"]["password"],
@@ -60,5 +60,5 @@ server = socksserver.SocksServer((ip, port), auth)
 server.start_server()
 print(f"[INFO] Socks4/5 server listening on {ip}:{port}")
 
-while True: # Block
+while True:  # Block
     time.sleep(1)

@@ -2,7 +2,7 @@
 # See LICENSE.md
 
 from socksserver.socksserv import ServerAuthenticationMethod
-import struct
+
 
 class DBUserPassAuth(ServerAuthenticationMethod):
     def __init__(self, connection):
@@ -32,7 +32,7 @@ class DBUserPassAuth(ServerAuthenticationMethod):
             if not self.__auth_user(id, pw):
                 socket.sendall(b"\x01\x01")
                 return False
-        except Exception as e:
+        except Exception:
             socket.sendall(b"\x01\x01")
             return False
 

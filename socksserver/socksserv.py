@@ -6,7 +6,7 @@ import socket
 import ipaddress
 import threading
 import sockslib
-import re
+
 
 class ServerAuthenticationMethod():
     def getId(self) -> int:
@@ -15,6 +15,7 @@ class ServerAuthenticationMethod():
     def authenticate(self, socket) -> bool:
         pass
 
+
 class NoAuth(ServerAuthenticationMethod):
     def getId(self):
         return 0x00
@@ -22,29 +23,36 @@ class NoAuth(ServerAuthenticationMethod):
     def authenticate(self, socket):
         return True
 
+
 class Hooks:
     def __init__(self, defaults=[]):
-        self.hooks = {k:None for k in defaults}
+        self.hooks = {k: None for k in defaults}
 
     def set_hook(self, hook, callback):
         self.hooks[hook] = callback
 
     def call_hook(self, hook, *args, **kwargs):
         if hook in self.hooks:
-            if self.hooks[hook] != None:
+            if self.hooks[hook] is not None:
                 return self.hooks[hook](*args, **kwargs)
+
 
 class SocketType:
     CLIENT = 1
     SERVER = 2
 
+
 class SocksServer(Hooks):
-    def __init__(self, bind, auth=[NoAuth()], allow_private = False, secure = False):
+    def __init__(self,
+                 bind,
+                 auth=[NoAuth()],
+                 allow_private=False,
+                 secure=False):
         super().__init__([
             "connect",
             "handshake_finish",
             "packet"
-        ]);
+        ])
         self.bind = bind
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -52,9 +60,7 @@ class SocksServer(Hooks):
         self.allow_private = allow_private
         self.secure = secure
 
-        self.valid_hops = [
-            [('67.55.67.100', 5678), ('163.53.196.30', 5678), ('66.181.167.129', 5678)]
-        ]
+        self.valid_hops = []
 
     def __proxy(self, p1, p2, p1addr, p2addr, doTerm, socketType):
         byte = b'\x00'
@@ -62,7 +68,7 @@ class SocksServer(Hooks):
             while byte != b'' and not doTerm[0]:
                 byte = p1.recv(1024)
                 dhook = self.call_hook("packet", byte, p1, p1addr, socketType)
-                if dhook != None:
+                if dhook is not None:
                     byte = dhook
                 p2.sendall(byte)
 
@@ -72,13 +78,13 @@ class SocksServer(Hooks):
         # Term p1
         try:
             p1.close()
-        except:
+        except Exception:
             pass
 
         # Term p2
         try:
             p2.close()
-        except:
+        except Exception:
             pass
 
         doTerm[0] = True
@@ -93,13 +99,13 @@ class SocksServer(Hooks):
 
         doTerm = [False]
 
-        threading.Thread (
+        threading.Thread(
             target=self.__proxy,
-            args=[conn, s, addr, dst, doTerm, SocketType.CLIENT], # conn -> s // conn = addr
+            args=[conn, s, addr, dst, doTerm, SocketType.CLIENT],  # conn -> s // conn = addr
             daemon=True
         ).start()
 
-        threading.Thread (
+        threading.Thread(
             target=self.__proxy,
             args=[s, conn, dst, addr, doTerm, SocketType.SERVER],
             daemon=True
@@ -111,13 +117,13 @@ class SocksServer(Hooks):
 
         doTerm = [False]
 
-        threading.Thread (
+        threading.Thread(
             target=self.__proxy,
             args=[conn, s, addr, dst, doTerm, SocketType.CLIENT], # conn -> s // conn = addr
             daemon=True
         ).start()
 
-        threading.Thread (
+        threading.Thread(
             target=self.__proxy,
             args=[s, conn, dst, addr, doTerm, SocketType.SERVER],
             daemon=True
@@ -156,7 +162,7 @@ class SocksServer(Hooks):
 
         print(f"Recieved SOCKS4 request from {addr[0]}:{addr[1]} to connect to: {dstip}:{dstport} ({id})")
 
-        if reDst != None:
+        if reDst is not None:
             dstip, dstport = reDst
             dstip = ipaddress.IPv4Address(dstip).exploded
 
@@ -176,12 +182,15 @@ class SocksServer(Hooks):
         if GOOD_REQUEST:
             try:
                 self.__start__v4(conn, addr, (dstip, dstport))
-            except:
+            except Exception:
                 conn.sendall(b"\x00\x5B")
                 conn.close()
                 return
 
-            conn.sendall(b"\x00\x5A" + struct.pack("!H", dstport) + ipaddress.IPv4Address(dstip).packed)
+            connectgrantpacket = b"\x00\x5A"
+            connectgrantpacket += struct.pack("!H", dstport)
+            connectgrantpacket += ipaddress.IPv4Address(dstip).packed
+            conn.sendall(connectgrantpacket)
         else:
             conn.sendall(b"\x00\x5B")
             conn.close()
@@ -203,7 +212,7 @@ class SocksServer(Hooks):
                     choice = au
                     break
 
-        if choice == None:
+        if choice is None:
             conn.sendall(b"\x05\xFF")
             conn.close()
             return
@@ -227,7 +236,7 @@ class SocksServer(Hooks):
 
         print(f"Recieved SOCKS5 request from {addr[0]}:{addr[1]} to connect to: {dstaddr.getIp()}:{dstport}")
 
-        if reDst != None:
+        if reDst is not None:
             dstaddr, dstport = reDst
             dstaddr = sockslib.Socks5Address(dstaddr, sockslib.IpIdentify.identify(dstaddr))
 
@@ -236,7 +245,7 @@ class SocksServer(Hooks):
                 conn.sendall(b"\x05\x02\x00")
                 conn.close()
                 return
-        except:
+        except Exception:
             pass
 
         try:
@@ -246,16 +255,20 @@ class SocksServer(Hooks):
                 self.__start__v6(conn, addr, (dstaddr.getIp(), dstport))
             elif dstaddr.getType() == sockslib.AddrTypes.Domain:
                 self.__start__domain(conn, addr, (dstaddr.getIp(), dstport))
-        except socket.gaierror as e:
+        except socket.gaierror:
             conn.sendall(b"\x05\x04\x00")
             conn.close()
             return
-        except socket.error as e:
+        except socket.error:
             conn.sendall(b"\x05\x03\x00")
             conn.close()
             return
 
-        conn.sendall(b"\x05\x00\x00" + dstaddr.getByteIp() + struct.pack("!H", dstport))
+        connectbindpacket = b"\x05\x00\x00"
+        connectbindpacket += dstaddr.getByteIp()
+        connectbindpacket += struct.pack("!H", dstport)
+
+        conn.sendall(connectbindpacket)
 
     def __handle_connection(self, conn, addr):
         self.call_hook("connect", conn, addr)
@@ -278,7 +291,6 @@ class SocksServer(Hooks):
                 args=[conn, addr],
                 daemon=True
             ).start()
-
 
     def __start_recv_thread(self):
         threading.Thread(
